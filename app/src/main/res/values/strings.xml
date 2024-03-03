@@ -12,4 +12,9 @@
     <string name="exit">Exit</string>
     <string name="play_again">Play Again</string>
     <string name="wrong_guess">Wrong Guess!</string>
+    <string name="the_word_starts_with">The word starts with - %1$s</string>
+    <string name="the_word_ends_with">The word ends with - %1$s</string>
+    <string name="confirm">Confirm</string>
+    <string name="list_item">%1$s - %2$s</string>
+    <string name="skipped_words">Skipped words</string>
 </resources>

@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
@@ -32,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -40,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
-import com.example.unscramble.data.MAX_NO_OF_HINTS
 import com.example.unscramble.data.MAX_NO_OF_WORDS
 import com.example.unscramble.ui.theme.UnScrambleTheme
 
@@ -71,6 +73,7 @@ fun GameScreen(
             currScrambledWord = gameUiState.currScrambledWord,
             wordCount = gameUiState.currWordCount,
             hintCount = gameUiState.currHintCount,
+            onHintTaken = { gameViewModel.hintAction() },
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
@@ -110,7 +113,15 @@ fun GameScreen(
     if (gameUiState.isGameOver) {
         FinalScoreDialog(
             score = gameUiState.score,
-            onPlayAgain = { gameViewModel.resetGame() }
+            onPlayAgain = { gameViewModel.resetGame() },
+            skippedWords = gameViewModel.skippedWords
+        )
+    }
+    if (gameUiState.showHint) {
+        HintDialog(
+            onConfirm = { gameViewModel.dismissHint() },
+            firstWord = gameViewModel.firstWord,
+            lastWord = gameViewModel.lastWord
         )
     }
 }
@@ -129,25 +140,13 @@ fun GameStatus(score: Int, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun HintStatus(score: Int, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-    ) {
-        Text(
-            text = stringResource(R.string.score, score),
-            style = typography.headlineMedium,
-            modifier = Modifier.padding(8.dp)
-        )
-    }
-}
-
-@Composable
 fun GameLayout(
     currScrambledWord: String,
     userGuess: String,
     isGuessWrong: Boolean,
     onUserGuessChange: (String) -> Unit,
     onKeyboardDone: () -> Unit,
+    onHintTaken: () -> Unit,
     wordCount: Int,
     hintCount: Int,
     modifier: Modifier = Modifier
@@ -167,15 +166,17 @@ fun GameLayout(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    modifier = Modifier
-                        .clip(shapes.medium)
-                        .background(colorScheme.surfaceTint)
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                    text = stringResource(R.string.word_count, hintCount, MAX_NO_OF_HINTS),
-                    style = typography.titleMedium,
-                    color = colorScheme.onPrimary
-                )
+                Button(onClick = onHintTaken, contentPadding = PaddingValues(horizontal = 12.dp)) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_lightbulb_outline_24),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = "$hintCount",
+                        modifier = Modifier.padding(start = 6.dp, end = 6.dp),
+                        style = typography.titleMedium
+                    )
+                }
                 Text(
                     modifier = Modifier
                         .clip(shapes.medium)
@@ -232,18 +233,37 @@ fun GameLayout(
 private fun FinalScoreDialog(
     score: Int,
     onPlayAgain: () -> Unit,
+    skippedWords: List<Pair<String, String>>,
     modifier: Modifier = Modifier
 ) {
     val activity = (LocalContext.current as Activity)
 
     AlertDialog(
-        onDismissRequest = {
-            // Dismiss the dialog when the user clicks outside the dialog or on the back
-            // button. If you want to disable that functionality, simply use an empty
-            // onCloseRequest.
+        onDismissRequest = {},
+        title = {
+            Column {
+                Text(text = stringResource(R.string.congratulations))
+                Text(text = stringResource(R.string.you_scored, score))
+
+            }
         },
-        title = { Text(text = stringResource(R.string.congratulations)) },
-        text = { Text(text = stringResource(R.string.you_scored, score)) },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.skipped_words),
+                    style = typography.headlineSmall
+                )
+                skippedWords.forEach {
+                    Text(
+                        text = stringResource(R.string.list_item, it.second, it.first),
+                        style = typography.bodyLarge
+                    )
+                }
+            }
+        },
         modifier = modifier,
         dismissButton = {
             TextButton(
@@ -257,6 +277,25 @@ private fun FinalScoreDialog(
         confirmButton = {
             TextButton(onClick = onPlayAgain) {
                 Text(text = stringResource(R.string.play_again))
+            }
+        }
+    )
+}
+
+@Composable
+fun HintDialog(onConfirm: () -> Unit, firstWord: String, lastWord: String) {
+    AlertDialog(
+        onDismissRequest = { /*TODO*/ },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = stringResource(R.string.confirm))
+            }
+        },
+        title = { Text(text = stringResource(id = R.string.hint)) },
+        text = {
+            Column {
+                Text(text = stringResource(R.string.the_word_starts_with, firstWord))
+                Text(text = stringResource(R.string.the_word_ends_with, lastWord))
             }
         }
     )
