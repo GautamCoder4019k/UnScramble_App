@@ -1,4 +1,4 @@
-package com.example.unscramble.ui
+package com.example.unscramble.ui.screen
 
 import com.example.unscramble.data.MAX_NO_OF_HINTS
 

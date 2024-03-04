@@ -10,8 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.unscramble.ui.GameScreen
-import com.example.unscramble.ui.GameViewModel
+import com.example.unscramble.ui.UnscrambleApp
 import com.example.unscramble.ui.theme.UnScrambleTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
 
-                   GameScreen(GameViewModel())
+                    UnscrambleApp()
                 }
 
             }

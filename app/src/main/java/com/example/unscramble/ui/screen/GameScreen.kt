@@ -1,4 +1,4 @@
-package com.example.unscramble.ui
+package com.example.unscramble.ui.screen
 
 import android.app.Activity
 import androidx.compose.foundation.background
@@ -56,15 +56,10 @@ fun GameScreen(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(mediumPadding),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Text(
-            text = stringResource(R.string.app_name),
-            style = typography.titleLarge,
-        )
-
+        GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))
         GameLayout(
             onUserGuessChange = { gameViewModel.updateUserGuess(it) },
             onKeyboardDone = { gameViewModel.checkUserGuess() },
@@ -108,7 +103,6 @@ fun GameScreen(
             }
         }
 
-        GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))
     }
     if (gameUiState.isGameOver) {
         FinalScoreDialog(
@@ -124,7 +118,10 @@ fun GameScreen(
             lastWord = gameViewModel.lastWord
         )
     }
+
+
 }
+
 
 @Composable
 fun GameStatus(score: Int, modifier: Modifier = Modifier) {
@@ -301,7 +298,7 @@ fun HintDialog(onConfirm: () -> Unit, firstWord: String, lastWord: String) {
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameScreenPreview() {
     UnScrambleTheme {

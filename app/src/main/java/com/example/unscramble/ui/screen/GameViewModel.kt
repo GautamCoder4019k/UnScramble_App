@@ -1,24 +1,35 @@
-package com.example.unscramble.ui
+package com.example.unscramble.ui.screen
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.unscramble.UnScrambleApplication
 import com.example.unscramble.data.MAX_NO_OF_WORDS
 import com.example.unscramble.data.SCORE_DECREASE
 import com.example.unscramble.data.SCORE_INCREASE
+import com.example.unscramble.data.WordsRepository
 import com.example.unscramble.data.allWords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.io.IOException
 
-class GameViewModel : ViewModel() {
+class GameViewModel(private val wordsRepository: WordsRepository) : ViewModel() {
 
 
     //Game UI State
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
+
+    private var words = listOf<String>()
 
     var firstWord = ""
         private set
@@ -45,6 +56,8 @@ class GameViewModel : ViewModel() {
     }
 
     fun resetGame() {
+        words= listOf()
+        getWords()
         usedWords.clear()
         skippedWords.clear()
         _uiState.value = GameUiState(currScrambledWord = pickRandomWordAndShuffle())
@@ -82,7 +95,7 @@ class GameViewModel : ViewModel() {
     }
 
     fun checkUserGuess() {
-        if (userGuess.equals(currWord, ignoreCase = true)) {
+        if (userGuess.trim().equals(currWord, ignoreCase = true)) {
             val updatedScore = _uiState.value.score.plus(SCORE_INCREASE)
             updateGameState(updatedScore)
         } else {
@@ -115,7 +128,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun pickRandomWordAndShuffle(): String {
-        currWord = allWords.random()
+        currWord = if (words.isEmpty()) allWords.random() else words.random()
         return if (usedWords.contains(currWord)) pickRandomWordAndShuffle()
         else {
             usedWords.add(currWord)
@@ -130,6 +143,27 @@ class GameViewModel : ViewModel() {
         while (String(tempWord) == word) tempWord.shuffle()
 
         return String(tempWord)
+    }
+
+    private fun getWords() {
+        viewModelScope.launch {
+            words = try {
+                wordsRepository.getWords()
+            } catch (e: IOException) {
+                listOf()
+            }
+            println(words)
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as UnScrambleApplication)
+                val wordsRepository = application.container.wordsRepository
+                GameViewModel(wordsRepository = wordsRepository)
+            }
+        }
     }
 
 
