@@ -10,6 +10,9 @@ This Android app is designed to provide an engaging and fun experience for users
 - **Hint System:** Stuck on a word? Utilize the hint system to get a clue and continue the challenge.
 
 ## Screenshots
+<img src="https://github.com/GautamCoder4019k/UnScramble_App/assets/123801344/c4cdc63f-b907-4e89-aee4-2212d45d85a7" width="300" height="600"> 
+<img src="https://github.com/GautamCoder4019k/UnScramble_App/assets/123801344/0f5ea672-2e58-443b-bde9-c3bfb0869400" width="300" height="600">
+<img src="https://github.com/GautamCoder4019k/UnScramble_App/assets/123801344/f8ee0200-968d-461d-8e3c-3b094c9a8fca" width="300" height="600">
 
 ## Getting Started
 
